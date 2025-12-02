@@ -1,0 +1,124 @@
+# AI Solopreneur Bot Configuration
+
+# Trend Fetcher Settings
+trend_fetcher:
+  keywords:
+    - "AI"
+    - "solopreneur"
+    - "productivity"
+    - "online business"
+    - "side hustle"
+    - "passive income"
+    - "digital products"
+  max_tweets_per_keyword: 100
+  fetch_interval_hours: 24
+  language: "en"
+
+# Niche Selector Settings
+niche_selector:
+  scoring_weights:
+    engagement: 0.4
+    relevance: 0.3
+    historical: 0.3
+  top_topics_count: 5
+  min_engagement_threshold: 10
+
+# Content Generator Settings
+content_generator:
+  tweets_per_topic: 5
+  max_tweet_length: 280
+  tone: "inspiring, actionable, professional"
+  include_hashtags: true
+  max_hashtags: 3
+  include_cta: true
+  
+  prompts:
+    tweet: |
+      You are a solopreneur expert. Generate {count} engaging tweets about: {topic}
+      
+      Requirements:
+      - {max_length} characters max
+      - Include {max_hashtags} relevant hashtags
+      - Hook in first line
+      - End with CTA or question
+      - Tone: {tone}
+      
+      Output format: One tweet per line.
+    
+    thread: |
+      Create a Twitter thread (5-7 tweets) about: {topic}
+      
+      Requirements:
+      - First tweet: Hook that grabs attention
+      - Middle tweets: Valuable insights, tips, or steps
+      - Last tweet: Strong CTA
+      - Each tweet max {max_length} characters
+      - Tone: {tone}
+
+# Scheduler/Poster Settings
+scheduler_poster:
+  posting_times:
+    - "09:00"  # 9 AM
+    - "14:00"  # 2 PM
+    - "18:00"  # 6 PM
+  timezone: "UTC"
+  max_posts_per_day: 5
+  retry_on_failure: true
+  retry_attempts: 3
+
+# Lead Capture Settings
+lead_capture:
+  sources:
+    - "twitter_dm"
+    - "twitter_mention"
+    - "landing_page_form"
+    - "link_click"
+  auto_respond_dm: true
+  dm_response_template: |
+    Thanks for your interest! 🎉
+    
+    Here's your free guide: {lead_magnet_url}
+    
+    Want more tips? Check out our latest products: {products_url}
+
+# Product Generator Settings
+product_generator:
+  generation_frequency_days: 7  # Weekly
+  product_types:
+    - "pdf_guide"
+    - "prompt_pack"
+    - "checklist"
+    - "template"
+  default_price: 0  # Free lead magnet
+  gumroad_auto_publish: true
+
+# Analytics Engine Settings
+analytics_engine:
+  metrics_to_track:
+    - "impressions"
+    - "likes"
+    - "retweets"
+    - "replies"
+    - "link_clicks"
+    - "engagement_rate"
+  analysis_frequency_hours: 24
+  lookback_days: 30
+  min_engagement_rate: 2.0  # Percentage
+  
+  optimization:
+    enabled: true
+    update_weights: true
+    weight_adjustment_factor: 0.2
+
+# Database Settings
+database:
+  path: "data/solopreneur.db"
+  backup_enabled: true
+  backup_frequency_days: 7
+
+# Logging Settings
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/bot.log"
+  console_output: true
