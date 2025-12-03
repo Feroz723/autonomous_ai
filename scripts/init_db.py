@@ -26,6 +26,10 @@ def init_database(db_path="data/solopreneur.db"):
         CREATE TABLE IF NOT EXISTS trends (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             topic TEXT NOT NULL,
+            source TEXT,
+            score INTEGER,
+            url TEXT,
+            keywords TEXT,
             hashtags TEXT,
             engagement_score INTEGER,
             tweet_count INTEGER,

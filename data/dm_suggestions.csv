@@ -1,0 +1,52 @@
+handle,template_type,suggested_dm,context,confidence
+john_doe,followup,"Hey @john_doe!
+
+Thanks for engaging with my post about AI automation! 🙏
+
+I'm always looking to connect with people who are interested in this space.
+
+What are you currently working on? Would love to hear more about your journey.",AI automation,high
+john_doe,resource,"Hey @john_doe!
+
+Saw your comment about AI automation. I actually just created a free guide on exactly this topic.
+
+It covers:
+✅ The framework I use daily
+✅ Real examples (not theory)
+✅ Tools & templates you can steal
+
+Want me to send it over? It's completely free.",AI automation,medium
+jane_smith,followup,"Hey @jane_smith!
+
+Thanks for engaging with my post about productivity hacks! 🙏
+
+I'm always looking to connect with people who are interested in this space.
+
+What are you currently working on? Would love to hear more about your journey.",productivity hacks,high
+jane_smith,resource,"Hey @jane_smith!
+
+Saw your comment about productivity hacks. I actually just created a free guide on exactly this topic.
+
+It covers:
+✅ The framework I use daily
+✅ Real examples (not theory)
+✅ Tools & templates you can steal
+
+Want me to send it over? It's completely free.",productivity hacks,medium
+tech_founder,followup,"Hey @tech_founder!
+
+Thanks for engaging with my post about solopreneur journey! 🙏
+
+I'm always looking to connect with people who are interested in this space.
+
+What are you currently working on? Would love to hear more about your journey.",solopreneur journey,high
+tech_founder,resource,"Hey @tech_founder!
+
+Saw your comment about solopreneur journey. I actually just created a free guide on exactly this topic.
+
+It covers:
+✅ The framework I use daily
+✅ Real examples (not theory)
+✅ Tools & templates you can steal
+
+Want me to send it over? It's completely free.",solopreneur journey,medium

@@ -1,0 +1,29 @@
+# Twitter/X API Settings & Rate Limits
+
+# API Configuration
+# Credentials should be loaded from environment variables:
+# TWITTER_API_KEY, TWITTER_API_SECRET, TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_SECRET
+
+enabled: false  # Set to true to enable real posting
+dry_run: true   # If true, will only log what would be posted
+
+# Rate Limits (Free Tier constraints)
+rate_limits:
+  tweets_per_day: 17  # Safe limit (allowance for retries/replies)
+  tweets_per_hour: 1
+  requests_window_mins: 15
+
+# Posting Schedule
+schedule:
+  timezone: "UTC"
+  slots:
+    - "09:00"
+    - "12:00"
+    - "15:00"
+    - "18:00"
+
+# Content Rules
+content:
+  max_length: 280
+  thread_delay_seconds: 30  # Delay between thread tweets
+  auto_reply_to_mentions: false

@@ -24,6 +24,7 @@ reportlab>=4.0.0
 # Web scraping and parsing
 lxml>=4.9.0
 html5lib>=1.1
+pytrends>=4.9.0
 
 # Data validation
 pydantic>=2.5.0

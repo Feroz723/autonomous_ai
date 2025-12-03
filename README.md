@@ -80,14 +80,17 @@ ai-solopreneur-bot/
 
 5. **Run locally (test)**
    ```bash
-   # Fetch trends
-   python src/trend_fetcher/main.py
+   # Fetch trends and select top topics (all-in-one)
+   python scripts/fetch_and_select_topics.py
    
-   # Generate content
-   python src/content_generator/main.py
+   # Fetch trends only
+   python src/trend_fetcher/fetch_trends.py
    
-   # Post content
-   python src/scheduler_poster/main.py
+   # Select topics from existing trends
+   python scripts/fetch_and_select_topics.py --skip-fetch
+   
+   # Get top 20 topics from last 48 hours
+   python scripts/fetch_and_select_topics.py --top 20 --hours 48
    ```
 
 6. **Deploy to GitHub Actions**
@@ -117,11 +120,54 @@ ai-solopreneur-bot/
 - **Purpose**: Auto-post content at optimal times
 - **Tools**: Twitter API, GitHub Actions
 - **Schedule**: 3x daily (9 AM, 2 PM, 6 PM)
+- **Manual Mode**: Generates `data/today_posts.txt` for manual posting if API is disabled.
+
+## 🐦 Twitter/X Integration
+
+### Option A: Automatic Posting (Requires API Key)
+1. Get API credentials from [Twitter Developer Portal](https://developer.twitter.com/en/portal/dashboard).
+2. Add them to `.env` or GitHub Secrets.
+3. Edit `config/twitter_settings.yaml`:
+   ```yaml
+   enabled: true
+   dry_run: false
+   ```
+
+### Option B: Manual Posting (Free)
+1. Leave `enabled: false` in `config/twitter_settings.yaml`.
+2. Run the daily script:
+   ```bash
+   python scripts/prepare_todays_posts.py
+   ```
+3. Open `data/today_posts.txt` and copy-paste tweets to X.
 
 ### 5. Lead Capture
 - **Purpose**: Capture interested leads
-- **Tools**: GitHub Pages, Formspree, Twitter API
-- **Output**: Lead database with contact info
+- **Tools**: SQLite database, DM templates, AI-generated outreach
+- **Output**: Personalized DM suggestions for engagers
+
+## 💼 Lead Capture & DM Automation
+
+### Step 1: Export Engagers
+Create a CSV file (`data/engagers.csv`) with people who engaged with your tweets:
+```csv
+handle,tweet_url,engagement_type,context
+john_doe,https://twitter.com/you/status/123,reply,AI automation
+jane_smith,https://twitter.com/you/status/124,like,productivity hacks
+```
+
+### Step 2: Generate DM Suggestions
+```bash
+python scripts/suggest_dms_for_engagers.py --input data/engagers.csv
+```
+
+This will:
+- Create personalized DM templates for each engager
+- Save leads to `data/leads.sqlite`
+- Output suggestions to `data/dm_suggestions.csv`
+
+### Step 3: Send DMs
+Review `data/dm_suggestions.csv` and manually send the best DMs via Twitter.
 
 ### 6. Product Generator
 - **Purpose**: Create digital products and publish to Gumroad
@@ -201,15 +247,14 @@ After 30 days of automation:
 
 ## 📈 Roadmap
 
-- [x] Project setup and architecture
-- [ ] Trend fetcher implementation
-- [ ] Niche selector with ML scoring
-- [ ] Content generator with LLM
-- [ ] GitHub Actions scheduler
-- [ ] Lead capture system
-- [ ] Product generator + Gumroad integration
-- [ ] Analytics dashboard
-- [ ] Multi-platform support (LinkedIn, Instagram)
+- [x] **Mission 1**: Project setup and architecture
+- [x] **Mission 2**: Trend fetcher and niche selector
+- [ ] **Mission 3**: Content generator with LLM
+- [ ] **Mission 4**: GitHub Actions scheduler
+- [ ] **Mission 5**: Lead capture system
+- [ ] **Mission 6**: Product generator + Gumroad integration
+- [ ] **Mission 7**: Analytics dashboard
+- [ ] **Mission 8**: Multi-platform support (LinkedIn, Instagram)
 - [ ] Email automation
 - [ ] A/B testing for content
 
