@@ -3,11 +3,6 @@ import random
 import time
 from abc import ABC, abstractmethod
 
-# Optional imports for real APIs
-# import google.generativeai as genai
-# import openai
-# import requests  # for Ollama
-
 class LLMClient(ABC):
     @abstractmethod
     def generate_text(self, prompt: str, system_prompt: str = None) -> str:
@@ -60,71 +55,39 @@ class DummyClient(LLMClient):
             "Follow me for more! 🔔"
         )
 
-# --- Real Implementations (Uncomment and configure to use) ---
+class OpenAIClient(LLMClient):
+    """OpenAI GPT client for content generation."""
+    def __init__(self, api_key=None):
+        try:
+            import openai
+            self.client = openai.OpenAI(api_key=api_key or os.getenv("OPENAI_API_KEY"))
+        except ImportError:
+            raise ImportError("openai package not installed. Install with: pip install openai")
 
-# class GeminiClient(LLMClient):
-#     def __init__(self, api_key=None):
-#         self.api_key = api_key or os.getenv("GEMINI_API_KEY")
-#         if not self.api_key:
-#             raise ValueError("GEMINI_API_KEY not found")
-#         genai.configure(api_key=self.api_key)
-#         self.model = genai.GenerativeModel('gemini-pro')
-#
-#     def generate_text(self, prompt: str, system_prompt: str = None) -> str:
-#         # Gemini doesn't have a separate system prompt in the basic generate_content
-#         # You can prepend it to the prompt
-#         full_prompt = f"{system_prompt}\n\n{prompt}" if system_prompt else prompt
-#         response = self.model.generate_content(full_prompt)
-#         return response.text
-
-# class OpenAIClient(LLMClient):
-#     def __init__(self, api_key=None):
-#         self.client = openai.OpenAI(api_key=api_key or os.getenv("OPENAI_API_KEY"))
-#
-#     def generate_text(self, prompt: str, system_prompt: str = None) -> str:
-#         messages = []
-#         if system_prompt:
-#             messages.append({"role": "system", "content": system_prompt})
-#         messages.append({"role": "user", "content": prompt})
-#         
-#         response = self.client.chat.completions.create(
-#             model="gpt-3.5-turbo",
-#             messages=messages
-#         )
-#         return response.choices[0].message.content
-
-# class OllamaClient(LLMClient):
-#     def __init__(self, base_url="http://localhost:11434", model="llama3.2"):
-#         self.base_url = base_url
-#         self.model = model
-#
-#     def generate_text(self, prompt: str, system_prompt: str = None) -> str:
-#         payload = {
-#             "model": self.model,
-#             "prompt": prompt,
-#             "stream": False
-#         }
-#         if system_prompt:
-#             payload["system"] = system_prompt
-#             
-#         response = requests.post(f"{self.base_url}/api/generate", json=payload)
-#         return response.json().get("response", "")
+    def generate_text(self, prompt: str, system_prompt: str = None) -> str:
+        messages = []
+        if system_prompt:
+            messages.append({"role": "system", "content": system_prompt})
+        messages.append({"role": "user", "content": prompt})
+        
+        response = self.client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=messages,
+            temperature=0.7,
+            max_tokens=500
+        )
+        return response.choices[0].message.content
 
 def get_llm_client() -> LLMClient:
     """Factory to get the configured LLM client."""
-    provider = os.getenv("LLM_PROVIDER", "dummy").lower()
-    
-    if provider == "gemini":
-        # return GeminiClient()
-        print("Gemini client requested but not enabled in code. Using Dummy.")
-        return DummyClient()
-    elif provider == "openai":
-        # return OpenAIClient()
-        print("OpenAI client requested but not enabled in code. Using Dummy.")
-        return DummyClient()
-    elif provider == "ollama":
-        # return OllamaClient()
-        print("Ollama client requested but not enabled in code. Using Dummy.")
-        return DummyClient()
+    # Auto-detect based on available API keys
+    if os.getenv("OPENAI_API_KEY"):
+        try:
+            print("✅ Using OpenAI GPT-3.5-turbo for content generation")
+            return OpenAIClient()
+        except Exception as e:
+            print(f"⚠️ Failed to initialize OpenAI client: {e}. Using Dummy.")
+            return DummyClient()
     else:
+        print("ℹ️ No API keys found. Using Dummy client for testing.")
         return DummyClient()

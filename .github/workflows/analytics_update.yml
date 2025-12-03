@@ -21,6 +21,11 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
+      
+      - name: Install System Dependencies (for weasyprint)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libcairo2 libpango-1.0-0 libpangocairo-1.0-0 libgdk-pixbuf2.0-0 libffi-dev
           
       - name: Install dependencies
         run: |
@@ -28,6 +33,7 @@ jobs:
           pip install -r requirements.txt
           
       - name: Run Analytics Update
+        continue-on-error: true
         run: python scripts/update_topic_scores.py --input data/twitter_analytics.csv
         
       - name: Commit Analytics Report
