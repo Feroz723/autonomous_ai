@@ -70,13 +70,18 @@ class OpenAIClient(LLMClient):
             messages.append({"role": "system", "content": system_prompt})
         messages.append({"role": "user", "content": prompt})
         
-        response = self.client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=messages,
-            temperature=0.7,
-            max_tokens=500
-        )
-        return response.choices[0].message.content
+        try:
+            response = self.client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=messages,
+                temperature=0.7,
+                max_tokens=500
+            )
+            return response.choices[0].message.content
+        except Exception as e:
+            print(f"\n⚠️ OpenAI Error: {str(e)}")
+            print("🔄 Falling back to Dummy Client to ensure workflow completion...")
+            return DummyClient().generate_text(prompt, system_prompt)
 
 def get_llm_client() -> LLMClient:
     """Factory to get the configured LLM client."""
