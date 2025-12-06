@@ -132,10 +132,20 @@ def generate_daily_plan(trends: list, analytics: dict) -> dict:
     # Select top 3-5
     selected_topics = ranked_topics[:5]
     
+    # Fallback if no trends found
+    if not selected_topics:
+        print("⚠️ No trends found. Using fallback topics.")
+        fallback_topics = [
+            ("AI Automation", {'niche': 'AI Automation', 'score': 50, 'sources': ['Fallback']}),
+            ("Solopreneur Productivity", {'niche': 'Productivity', 'score': 45, 'sources': ['Fallback']}),
+            ("Python for Business", {'niche': 'AI for Business', 'score': 40, 'sources': ['Fallback']})
+        ]
+        selected_topics = fallback_topics
+    
     # Generate content suggestions using LLM
     llm_client = get_llm_client()
     
-    best_topic = selected_topics[0][0] if selected_topics else "AI Automation"
+    best_topic = selected_topics[0][0]
     
     # Generate tweet ideas
     tweet_prompt = f"""Generate 5 single tweet ideas about "{best_topic}" for solopreneurs.
@@ -174,11 +184,15 @@ Format: Just describe the product in 2-3 sentences."""
     
     product_idea = llm_client.generate_text(product_prompt)
     
+    # Check for degraded mode (dummy content)
+    is_degraded = "Dummy response" in tweet_ideas or "Dummy response" in thread_idea
+    
     return {
         'selected_topics': selected_topics,
         'tweet_ideas': tweet_ideas,
         'thread_idea': thread_idea,
-        'product_idea': product_idea
+        'product_idea': product_idea,
+        'degraded_mode': is_degraded
     }
 
 def create_trend_plan_artifact(plan: dict) -> str:

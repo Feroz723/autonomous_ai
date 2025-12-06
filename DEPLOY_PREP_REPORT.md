@@ -67,23 +67,6 @@ After pushing to GitHub:
 
 1. **Configure Secrets** (Settings > Secrets > Actions):
    - Add all Twitter API keys
-   - Add OpenAI API key (if using)
-
-2. **Enable Actions** (Actions tab):
-   - Click "Enable workflows"
-
-3. **Verify Workflows**:
-   - Check that `daily_cycle.yml`, `trend_niche_brain_daily.yml`, and `analytics_update.yml` are visible
-
-4. **Enable Real Posting** (when ready):
-   - Edit `config/twitter_settings.yaml`
-   - Set `enabled: true` and `dry_run: false`
-   - Commit and push
-
----
-
-## Files Created
-
 - `/docs/GIT_PUSH_INSTRUCTIONS.txt` - Step-by-step deployment guide
 - `/DEPLOY_PREP_REPORT.md` - This report
 - `/FINAL_SYSTEM_STATUS.md` - System readiness report
@@ -100,3 +83,15 @@ After pushing to GitHub:
 ---
 
 **Next Step**: Follow the instructions in `docs/GIT_PUSH_INSTRUCTIONS.txt` to deploy to GitHub.
+
+## 🛡️ LLM Robustness Update (2025-12-06)
+
+Added comprehensive failure handling for LLM API calls:
+- **Circuit Breaker**: Automatically disables failing providers (e.g., OpenAI on 429) for 10 minutes.
+- **Retries**: 3 attempts with exponential backoff.
+- **Fallback**: Automatically switches to Dummy Client if all else fails.
+- **Degraded Mode**: Pipeline continues running even with dummy content.
+
+**New Configuration Options:**
+- `USE_DUMMY_LLM=true`: Force dummy mode.
+- `CIRCUIT_TTL_SECONDS=600`: Adjust circuit breaker duration.
