@@ -3,6 +3,10 @@ import random
 import time
 import sys
 from abc import ABC, abstractmethod
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Add src to path if needed to import utils
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
