@@ -4,8 +4,8 @@
 # Credentials should be loaded from environment variables:
 # TWITTER_API_KEY, TWITTER_API_SECRET, TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_SECRET
 
-enabled: false  # Set to true to enable real posting
-dry_run: true   # If true, will only log what would be posted
+enabled: true   # Set to true to enable real posting
+dry_run: false  # If true, will only log what would be posted
 
 # Rate Limits (Free Tier constraints)
 rate_limits:
