@@ -144,8 +144,23 @@ class GeminiClient(LLMClient):
             api_key = api_key or os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
             genai.configure(api_key=api_key)
             
-            # Using Gemini 1.5 Flash (free tier: 15 RPM, 1M TPM)
-            self.model = genai.GenerativeModel('gemini-1.5-flash')
+            # Try different model names (Google keeps changing them)
+            # Free tier models: gemini-pro, gemini-1.5-flash-latest
+            model_names = ['gemini-1.5-flash-latest', 'gemini-pro', 'gemini-1.5-flash']
+            
+            for model_name in model_names:
+                try:
+                    self.model = genai.GenerativeModel(model_name)
+                    self.model_name = model_name
+                    # Test if model is accessible
+                    self.model.count_tokens("test")
+                    print(f"📱 Using Gemini model: {model_name}")
+                    break
+                except Exception as e:
+                    if model_name == model_names[-1]:  # Last attempt
+                        raise Exception(f"None of the Gemini models are available: {model_names}")
+                    continue
+            
             self.provider_name = "gemini"
         except ImportError:
             raise Exception("google-generativeai not installed. Run: pip install google-generativeai")
