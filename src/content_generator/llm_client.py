@@ -173,6 +173,10 @@ class GeminiClient(LLMClient):
             print(f"⚠️ Circuit open for {self.provider_name}. Falling back to Dummy.")
             return DummyClient().generate_text(prompt, system_prompt)
         
+        # Rate limit handling for free tier (5 requests/minute = 1 every 12 seconds)
+        # Add a small delay to avoid hitting the limit
+        time.sleep(13)  # 13 seconds = 4.6 req/min (safely under 5/min limit)
+        
         # Combine system and user prompts
         full_prompt = prompt
         if system_prompt:
