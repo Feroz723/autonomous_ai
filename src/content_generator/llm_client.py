@@ -135,6 +135,67 @@ class OpenAIClient(LLMClient):
         
         return DummyClient().generate_text(prompt, system_prompt)
 
+class GeminiClient(LLMClient):
+    """Google Gemini client with retries and circuit breaker."""
+    def __init__(self, api_key=None):
+        try:
+            import google.generativeai as genai
+            
+            api_key = api_key or os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+            genai.configure(api_key=api_key)
+            
+            # Using Gemini 1.5 Flash (free tier: 15 RPM, 1M TPM)
+            self.model = genai.GenerativeModel('gemini-1.5-flash')
+            self.provider_name = "gemini"
+        except ImportError:
+            raise Exception("google-generativeai not installed. Run: pip install google-generativeai")
+        except Exception as e:
+            raise Exception(f"Failed to initialize Gemini: {str(e)}")
+    
+    def generate_text(self, prompt: str, system_prompt: str = None, max_retries: int = 3) -> str:
+        # Check circuit breaker first
+        if circuit and circuit.is_open(self.provider_name):
+            print(f"⚠️ Circuit open for {self.provider_name}. Falling back to Dummy.")
+            return DummyClient().generate_text(prompt, system_prompt)
+        
+        # Combine system and user prompts
+        full_prompt = prompt
+        if system_prompt:
+            full_prompt = f"{system_prompt}\\n\\n{prompt}"
+        
+        for attempt in range(1, max_retries + 1):
+            try:
+                response = self.model.generate_content(full_prompt)
+                
+                # Extract text from response
+                if response and response.text:
+                    return response.text.strip()
+                else:
+                    raise Exception("Empty response from Gemini")
+                    
+            except Exception as e:
+                error_msg = str(e).lower()
+                print(f"⚠️ Gemini Error (Attempt {attempt}/{max_retries}): {e}")
+                
+                # Check for quota/rate limit errors
+                if "quota" in error_msg or "rate limit" in error_msg or "429" in error_msg:
+                    if circuit:
+                        circuit.mark_failure(self.provider_name)
+                    print(f"🛑 Critical Gemini error. Opening circuit breaker and falling back.")
+                    return DummyClient().generate_text(prompt, system_prompt)
+                
+                # If last attempt failed, fallback
+                if attempt == max_retries:
+                    print("❌ All Gemini retries failed. Falling back to Dummy Client.")
+                    return DummyClient().generate_text(prompt, system_prompt)
+                
+                # Exponential backoff with jitter
+                sleep_time = (2 ** attempt) + random.uniform(0, 1)
+                print(f"⏳ Retrying in {sleep_time:.2f}s...")
+                time.sleep(sleep_time)
+        
+        return DummyClient().generate_text(prompt, system_prompt)
+
 def get_llm_client() -> LLMClient:
     """Factory to get the configured LLM client."""
     
@@ -146,11 +207,20 @@ def get_llm_client() -> LLMClient:
     # 2. Check provider preference
     provider = os.getenv("LLM_PROVIDER", "auto").lower()
     
-    # 3. Auto-detect or specific provider
+    # 3. Try Gemini first (it's free!)
+    if provider == "gemini" or (provider == "auto" and (os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY"))):
+        try:
+            if circuit and circuit.is_open("gemini"):
+                print("⚠️ Gemini circuit is OPEN. Trying other providers...")
+            else:
+                print("✅ Using Google Gemini 1.5 Flash (FREE)")
+                return GeminiClient()
+        except Exception as e:
+            print(f"⚠️ Failed to initialize Gemini: {e}. Trying other providers...")
+    
+    # 4. Try OpenAI
     if provider == "openai" or (provider == "auto" and os.getenv("OPENAI_API_KEY")):
         try:
-            # Check if circuit is already open before even trying to instantiate
-            # (Though instantiation is cheap, good practice)
             if circuit and circuit.is_open("openai"):
                 print("⚠️ OpenAI circuit is OPEN. Using Dummy Client.")
                 return DummyClient()

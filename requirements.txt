@@ -14,8 +14,11 @@ matplotlib>=3.8.0
 # Twitter API
 tweepy>=4.14.0
 
-# OpenAI (optional - use Ollama as free alternative)
+# OpenAI (optional - use Gemini or Ollama as free alternatives)
 openai>=1.0.0
+
+# Google Gemini (FREE alternative to OpenAI)
+google-generativeai>=0.3.0
 
 # PDF generation
 weasyprint>=60.0
