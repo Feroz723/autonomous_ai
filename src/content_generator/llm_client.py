@@ -144,9 +144,9 @@ class GeminiClient(LLMClient):
             api_key = api_key or os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
             genai.configure(api_key=api_key)
             
-            # Try different model names (Google keeps changing them)
-            # Free tier models: gemini-pro, gemini-1.5-flash-latest
-            model_names = ['gemini-1.5-flash-latest', 'gemini-pro', 'gemini-1.5-flash']
+            # Try different model names (use latest available models from Google)
+            # These are the FREE tier models available as of Dec 2025
+            model_names = ['gemini-flash-latest', 'gemini-2.5-flash', 'gemini-2.0-flash']
             
             for model_name in model_names:
                 try:
