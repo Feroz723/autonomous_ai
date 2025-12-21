@@ -1,21 +1,6 @@
 [
   {
     "type": "thread",
-    "topic_id": 4,
-    "content": "1/5 Here is a thread about the importance of this topic. \ud83e\uddf5\n\nIt's crucial for modern business.\n\n---\n\n2/5 First point: Efficiency.\n\nAutomation saves time. Time is money. \ud83d\udcb0\n\n---\n\n3/5 Second point: Scalability.\n\nSystems allow you to grow without burnout. \ud83d\udcc8\n\n---\n\n4/5 Third point: Freedom.\n\nThe goal isn't just money, it's time freedom. \ud83c\udfd6\ufe0f\n\n---\n\n5/5 Summary:\n- Automate everything\n- Build systems\n- Enjoy life\n\nFollow me for more! \ud83d\udd14",
-    "raw_data": {
-      "tweets": [
-        "1/5 Here is a thread about the importance of this topic. \ud83e\uddf5\n\nIt's crucial for modern business.",
-        "2/5 First point: Efficiency.\n\nAutomation saves time. Time is money. \ud83d\udcb0",
-        "3/5 Second point: Scalability.\n\nSystems allow you to grow without burnout. \ud83d\udcc8",
-        "4/5 Third point: Freedom.\n\nThe goal isn't just money, it's time freedom. \ud83c\udfd6\ufe0f",
-        "5/5 Summary:\n- Automate everything\n- Build systems\n- Enjoy life\n\nFollow me for more! \ud83d\udd14"
-      ]
-    },
-    "created_at": "2025-12-11T07:22:09.879357"
-  },
-  {
-    "type": "thread",
     "topic_id": 62,
     "content": "1/5 Here is a thread about the importance of this topic. \ud83e\uddf5\n\nIt's crucial for modern business.\n\n---\n\n2/5 First point: Efficiency.\n\nAutomation saves time. Time is money. \ud83d\udcb0\n\n---\n\n3/5 Second point: Scalability.\n\nSystems allow you to grow without burnout. \ud83d\udcc8\n\n---\n\n4/5 Third point: Freedom.\n\nThe goal isn't just money, it's time freedom. \ud83c\udfd6\ufe0f\n\n---\n\n5/5 Summary:\n- Automate everything\n- Build systems\n- Enjoy life\n\nFollow me for more! \ud83d\udd14",
     "raw_data": {
@@ -1170,31 +1155,34 @@
     "created_at": "2025-12-20T19:13:12.515630"
   },
   {
-    "type": "tweet",
+    "type": "thread",
     "topic_id": 56,
-    "content": "Stop overcomplicating AI.\n\n1. Start small\n2. Iterate fast\n3. Profit\n\nIt's that simple. \ud83d\udca1 #AI #Growth",
+    "content": "1/5 Here is a thread about the importance of this topic. \ud83e\uddf5\n\nIt's crucial for modern business.\n\n---\n\n2/5 First point: Efficiency.\n\nAutomation saves time. Time is money. \ud83d\udcb0\n\n---\n\n3/5 Second point: Scalability.\n\nSystems allow you to grow without burnout. \ud83d\udcc8\n\n---\n\n4/5 Third point: Freedom.\n\nThe goal isn't just money, it's time freedom. \ud83c\udfd6\ufe0f\n\n---\n\n5/5 Summary:\n- Automate everything\n- Build systems\n- Enjoy life\n\nFollow me for more! \ud83d\udd14",
     "raw_data": {
-      "text": "Stop overcomplicating AI.\n\n1. Start small\n2. Iterate fast\n3. Profit\n\nIt's that simple. \ud83d\udca1 #AI #Growth"
+      "tweets": [
+        "1/5 Here is a thread about the importance of this topic. \ud83e\uddf5\n\nIt's crucial for modern business.",
+        "2/5 First point: Efficiency.\n\nAutomation saves time. Time is money. \ud83d\udcb0",
+        "3/5 Second point: Scalability.\n\nSystems allow you to grow without burnout. \ud83d\udcc8",
+        "4/5 Third point: Freedom.\n\nThe goal isn't just money, it's time freedom. \ud83c\udfd6\ufe0f",
+        "5/5 Summary:\n- Automate everything\n- Build systems\n- Enjoy life\n\nFollow me for more! \ud83d\udd14"
+      ]
     },
-    "created_at": "2025-12-12T19:15:02.840248"
+    "created_at": "2025-12-21T02:57:46.629994"
   },
   {
-    "type": "tweet",
-    "topic_id": 25,
-    "content": "The secret to mastering AI? Consistency.\n\nDo it every day for 30 days and watch your life change. \ud83d\udcc8",
+    "type": "thread",
+    "topic_id": 2,
+    "content": "1/5 Here is a thread about the importance of this topic. \ud83e\uddf5\n\nIt's crucial for modern business.\n\n---\n\n2/5 First point: Efficiency.\n\nAutomation saves time. Time is money. \ud83d\udcb0\n\n---\n\n3/5 Second point: Scalability.\n\nSystems allow you to grow without burnout. \ud83d\udcc8\n\n---\n\n4/5 Third point: Freedom.\n\nThe goal isn't just money, it's time freedom. \ud83c\udfd6\ufe0f\n\n---\n\n5/5 Summary:\n- Automate everything\n- Build systems\n- Enjoy life\n\nFollow me for more! \ud83d\udd14",
     "raw_data": {
-      "text": "The secret to mastering AI? Consistency.\n\nDo it every day for 30 days and watch your life change. \ud83d\udcc8"
+      "tweets": [
+        "1/5 Here is a thread about the importance of this topic. \ud83e\uddf5\n\nIt's crucial for modern business.",
+        "2/5 First point: Efficiency.\n\nAutomation saves time. Time is money. \ud83d\udcb0",
+        "3/5 Second point: Scalability.\n\nSystems allow you to grow without burnout. \ud83d\udcc8",
+        "4/5 Third point: Freedom.\n\nThe goal isn't just money, it's time freedom. \ud83c\udfd6\ufe0f",
+        "5/5 Summary:\n- Automate everything\n- Build systems\n- Enjoy life\n\nFollow me for more! \ud83d\udd14"
+      ]
     },
-    "created_at": "2025-12-12T19:15:03.141013"
-  },
-  {
-    "type": "tweet",
-    "topic_id": 22,
-    "content": "Stop overcomplicating AI.\n\n1. Start small\n2. Iterate fast\n3. Profit\n\nIt's that simple. \ud83d\udca1 #AI #Growth",
-    "raw_data": {
-      "text": "Stop overcomplicating AI.\n\n1. Start small\n2. Iterate fast\n3. Profit\n\nIt's that simple. \ud83d\udca1 #AI #Growth"
-    },
-    "created_at": "2025-12-12T19:15:03.341548"
+    "created_at": "2025-12-21T02:57:46.930715"
   },
   {
     "type": "tweet",
@@ -2644,6 +2632,51 @@
       "text": "The secret to mastering AI? Consistency.\n\nDo it every day for 30 days and watch your life change. \ud83d\udcc8"
     },
     "created_at": "2025-12-20T19:13:13.116656"
+  },
+  {
+    "type": "tweet",
+    "topic_id": 56,
+    "content": "The secret to mastering AI? Consistency.\n\nDo it every day for 30 days and watch your life change. \ud83d\udcc8",
+    "raw_data": {
+      "text": "The secret to mastering AI? Consistency.\n\nDo it every day for 30 days and watch your life change. \ud83d\udcc8"
+    },
+    "created_at": "2025-12-21T02:57:46.529774"
+  },
+  {
+    "type": "tweet",
+    "topic_id": 2,
+    "content": "Stop overcomplicating AI.\n\n1. Start small\n2. Iterate fast\n3. Profit\n\nIt's that simple. \ud83d\udca1 #AI #Growth",
+    "raw_data": {
+      "text": "Stop overcomplicating AI.\n\n1. Start small\n2. Iterate fast\n3. Profit\n\nIt's that simple. \ud83d\udca1 #AI #Growth"
+    },
+    "created_at": "2025-12-21T02:57:46.830484"
+  },
+  {
+    "type": "tweet",
+    "topic_id": 58,
+    "content": "Stop overcomplicating AI.\n\n1. Start small\n2. Iterate fast\n3. Profit\n\nIt's that simple. \ud83d\udca1 #AI #Growth",
+    "raw_data": {
+      "text": "Stop overcomplicating AI.\n\n1. Start small\n2. Iterate fast\n3. Profit\n\nIt's that simple. \ud83d\udca1 #AI #Growth"
+    },
+    "created_at": "2025-12-21T02:57:47.131184"
+  },
+  {
+    "type": "tweet",
+    "topic_id": 64,
+    "content": "Here's why AI is changing the game in 2025. \ud83d\ude80\n\nMost people ignore it, but the top 1% are leveraging it daily.\n\nDon't get left behind. #AI #Solopreneur",
+    "raw_data": {
+      "text": "Here's why AI is changing the game in 2025. \ud83d\ude80\n\nMost people ignore it, but the top 1% are leveraging it daily.\n\nDon't get left behind. #AI #Solopreneur"
+    },
+    "created_at": "2025-12-21T02:57:47.331644"
+  },
+  {
+    "type": "tweet",
+    "topic_id": 62,
+    "content": "Stop overcomplicating AI.\n\n1. Start small\n2. Iterate fast\n3. Profit\n\nIt's that simple. \ud83d\udca1 #AI #Growth",
+    "raw_data": {
+      "text": "Stop overcomplicating AI.\n\n1. Start small\n2. Iterate fast\n3. Profit\n\nIt's that simple. \ud83d\udca1 #AI #Growth"
+    },
+    "created_at": "2025-12-21T02:57:47.532074"
   },
   {
     "type": "cta",
@@ -6064,5 +6097,50 @@
       "text": "Stop overcomplicating AI.\n\n1. Start small\n2. Iterate fast\n3. Profit\n\nIt's that simple. \ud83d\udca1 #AI #Growth"
     },
     "created_at": "2025-12-20T19:13:13.216805"
+  },
+  {
+    "type": "cta",
+    "topic_id": 56,
+    "content": "Stop overcomplicating AI.\n\n1. Start small\n2. Iterate fast\n3. Profit\n\nIt's that simple. \ud83d\udca1 #AI #Growth",
+    "raw_data": {
+      "text": "Stop overcomplicating AI.\n\n1. Start small\n2. Iterate fast\n3. Profit\n\nIt's that simple. \ud83d\udca1 #AI #Growth"
+    },
+    "created_at": "2025-12-21T02:57:46.730233"
+  },
+  {
+    "type": "cta",
+    "topic_id": 2,
+    "content": "The secret to mastering AI? Consistency.\n\nDo it every day for 30 days and watch your life change. \ud83d\udcc8",
+    "raw_data": {
+      "text": "The secret to mastering AI? Consistency.\n\nDo it every day for 30 days and watch your life change. \ud83d\udcc8"
+    },
+    "created_at": "2025-12-21T02:57:47.030944"
+  },
+  {
+    "type": "cta",
+    "topic_id": 58,
+    "content": "The secret to mastering AI? Consistency.\n\nDo it every day for 30 days and watch your life change. \ud83d\udcc8",
+    "raw_data": {
+      "text": "The secret to mastering AI? Consistency.\n\nDo it every day for 30 days and watch your life change. \ud83d\udcc8"
+    },
+    "created_at": "2025-12-21T02:57:47.231416"
+  },
+  {
+    "type": "cta",
+    "topic_id": 64,
+    "content": "The secret to mastering AI? Consistency.\n\nDo it every day for 30 days and watch your life change. \ud83d\udcc8",
+    "raw_data": {
+      "text": "The secret to mastering AI? Consistency.\n\nDo it every day for 30 days and watch your life change. \ud83d\udcc8"
+    },
+    "created_at": "2025-12-21T02:57:47.431858"
+  },
+  {
+    "type": "cta",
+    "topic_id": 62,
+    "content": "Here's why AI is changing the game in 2025. \ud83d\ude80\n\nMost people ignore it, but the top 1% are leveraging it daily.\n\nDon't get left behind. #AI #Solopreneur",
+    "raw_data": {
+      "text": "Here's why AI is changing the game in 2025. \ud83d\ude80\n\nMost people ignore it, but the top 1% are leveraging it daily.\n\nDon't get left behind. #AI #Solopreneur"
+    },
+    "created_at": "2025-12-21T02:57:47.632259"
   }
 ]
