@@ -1,9 +1,9 @@
 name: Trend & Niche Brain Daily
 
 on:
-  schedule:
-    # Run at 6:00 AM UTC daily
-    - cron: '0 6 * * *'
+#  schedule:
+#    # Run at 6:00 AM UTC daily
+#    - cron: '0 6 * * *'
   workflow_dispatch:
 
 permissions:
