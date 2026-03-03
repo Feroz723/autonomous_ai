@@ -351,6 +351,23 @@ def store_trends_to_sqlite(trends: List[Dict], db_path: str = "data/solopreneur.
     
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
+
+    # Ensure required table exists even when init script was skipped
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS trends (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            topic TEXT NOT NULL,
+            source TEXT,
+            score INTEGER,
+            url TEXT,
+            keywords TEXT,
+            hashtags TEXT,
+            engagement_score INTEGER,
+            tweet_count INTEGER,
+            category TEXT,
+            fetched_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
     
     stored_count = 0
     
@@ -368,8 +385,11 @@ def store_trends_to_sqlite(trends: List[Dict], db_path: str = "data/solopreneur.
                 trend['timestamp']
             ))
             stored_count += 1
+        except sqlite3.IntegrityError:
+            # Safe to skip duplicates if unique constraints exist
+            continue
         except Exception as e:
-            # Skip duplicates or errors
+            print(f"⚠️  Failed to store trend '{trend.get('topic', 'unknown')}': {e}")
             continue
     
     conn.commit()

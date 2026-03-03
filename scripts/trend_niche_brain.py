@@ -39,6 +39,23 @@ def load_recent_trends(db_path: str, hours: int = 24) -> list:
     """Load trends from the last N hours."""
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
+
+    # Ensure trends table exists so orchestration can run from a clean repo
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS trends (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            topic TEXT NOT NULL,
+            source TEXT,
+            score INTEGER,
+            url TEXT,
+            keywords TEXT,
+            hashtags TEXT,
+            engagement_score INTEGER,
+            tweet_count INTEGER,
+            category TEXT,
+            fetched_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
     
     cutoff = datetime.now() - timedelta(hours=hours)
     cutoff_str = cutoff.isoformat()

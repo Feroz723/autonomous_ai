@@ -69,6 +69,23 @@ def load_recent_trends(db_path: str = "data/solopreneur.db", hours: int = 24) ->
     """
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
+
+    # Ensure table exists so first run doesn't crash
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS trends (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            topic TEXT NOT NULL,
+            source TEXT,
+            score INTEGER,
+            url TEXT,
+            keywords TEXT,
+            hashtags TEXT,
+            engagement_score INTEGER,
+            tweet_count INTEGER,
+            category TEXT,
+            fetched_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
     
     # Calculate cutoff time
     cutoff = datetime.now() - timedelta(hours=hours)
@@ -283,16 +300,53 @@ def select_topics(
     print(f"📊 Loaded {len(trends)} recent trends (last {hours}h)")
     
     if not trends:
-        print("⚠️  No recent trends found. Run trend fetcher first.")
-        return []
+        print("⚠️  No recent trends found. Using fallback topics.")
+        return [
+            {
+                'id': 0,
+                'topic': 'AI automation workflows for solopreneurs',
+                'source': 'fallback',
+                'score': 85,
+                'url': '',
+                'keywords': ['AI', 'automation', 'solopreneur'],
+                'keyword_match_count': 3,
+                'relevance_score': 10.0,
+                'recency_factor': 1.0,
+                'final_score': 95.0,
+            },
+            {
+                'id': 0,
+                'topic': 'High-converting digital product ideas',
+                'source': 'fallback',
+                'score': 80,
+                'url': '',
+                'keywords': ['digital products', 'income', 'online business'],
+                'keyword_match_count': 3,
+                'relevance_score': 9.0,
+                'recency_factor': 1.0,
+                'final_score': 89.0,
+            },
+            {
+                'id': 0,
+                'topic': 'Productivity systems for solo founders',
+                'source': 'fallback',
+                'score': 75,
+                'url': '',
+                'keywords': ['productivity', 'workflow', 'entrepreneur'],
+                'keyword_match_count': 3,
+                'relevance_score': 8.0,
+                'recency_factor': 1.0,
+                'final_score': 83.0,
+            },
+        ]
     
     # Filter by niche
     filtered = filter_by_niche(trends, min_keyword_matches)
     print(f"🎯 Filtered to {len(filtered)} niche-relevant trends")
     
     if not filtered:
-        print("⚠️  No trends matched niche keywords.")
-        return []
+        print("⚠️  No trends matched niche keywords. Falling back to unfiltered trends.")
+        filtered = trends
     
     # Rank topics
     ranked = rank_topics(filtered)
