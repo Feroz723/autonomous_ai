@@ -50,6 +50,20 @@ def save_to_db(items: list[ContentItem]):
     """Saves generated content to database."""
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
+
+    # Ensure table exists for first-run environments
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS generated_content (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            niche_score_id INTEGER,
+            content_type TEXT,
+            content TEXT,
+            hashtags TEXT,
+            cta_link TEXT,
+            generated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            posted BOOLEAN DEFAULT 0
+        )
+    """)
     
     count = 0
     for item in items:
