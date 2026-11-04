@@ -1,26 +1,45 @@
+import logging
 import os
 import time
-import yaml
-import tweepy
-import logging
 from typing import List, Optional
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
+import tweepy
+import yaml
+
+
 logger = logging.getLogger(__name__)
 
+
 def load_config():
-    config_path = os.path.join(os.path.dirname(__file__), '..', '..', 'config', 'twitter_settings.yaml')
-    with open(config_path, 'r') as f:
-        return yaml.safe_load(f)
+    """Load Twitter settings, falling back to safe defaults for missing YAML."""
+    config_path = os.path.join(
+        os.path.dirname(__file__), "..", "..", "config", "twitter_settings.yaml"
+    )
+    try:
+        with open(config_path, "r", encoding="utf-8") as config_file:
+            config = yaml.safe_load(config_file)
+    except (OSError, yaml.YAMLError) as exc:
+        logger.warning("Could not load Twitter settings from %s: %s", config_path, exc)
+        config = {}
+
+    if not isinstance(config, dict):
+        config = {}
+    content = config.get("content")
+    if not isinstance(content, dict):
+        content = {}
+    config["content"] = content
+    config.setdefault("enabled", False)
+    config.setdefault("dry_run", True)
+    return config
+
 
 class TwitterPoster:
     def __init__(self):
         self.config = load_config()
         self.client = None
         self.api = None
-        
-        if self.config.get('enabled', False):
+
+        if self.config.get("enabled", False):
             self._authenticate()
 
     def _authenticate(self):
@@ -35,32 +54,25 @@ class TwitterPoster:
                 logger.warning("Twitter credentials missing. Posting disabled.")
                 return
 
-            # Client for v2 API (posting tweets)
             self.client = tweepy.Client(
                 bearer_token=bearer_token,
                 consumer_key=api_key,
                 consumer_secret=api_secret,
                 access_token=access_token,
-                access_token_secret=access_secret
+                access_token_secret=access_secret,
             )
-            
-            # API for v1.1 (media upload if needed)
-            auth = tweepy.OAuth1UserHandler(api_key, api_secret, access_token, access_secret)
+            auth = tweepy.OAuth1UserHandler(
+                api_key, api_secret, access_token, access_secret
+            )
             self.api = tweepy.API(auth)
-            
             logger.info("Authenticated with Twitter API")
-            
-        except Exception as e:
-            logger.error(f"Authentication failed: {e}")
+        except Exception as exc:
+            logger.error("Authentication failed: %s", exc)
 
     def post_tweet(self, text: str) -> Optional[str]:
-        """Post a single tweet. Returns Tweet ID if successful."""
-        if not self.config.get('enabled', False):
-            logger.info(f"[DRY RUN] Would post tweet: {text[:50]}...")
-            return "dry_run_id"
-
-        if self.config.get('dry_run', True):
-            logger.info(f"[DRY RUN] Would post tweet: {text[:50]}...")
+        """Post one tweet and return its ID, or None if posting failed."""
+        if not self.config.get("enabled", False) or self.config.get("dry_run", True):
+            logger.info("[DRY RUN] Would post tweet: %s...", text[:50])
             return "dry_run_id"
 
         if not self.client:
@@ -69,15 +81,18 @@ class TwitterPoster:
 
         try:
             response = self.client.create_tweet(text=text)
-            tweet_id = response.data['id']
-            logger.info(f"Posted tweet {tweet_id}")
-            return tweet_id
-        except Exception as e:
-            logger.error(f"Failed to post tweet: {e}")
+            tweet_id = response.data.get("id") if response.data else None
+            if not tweet_id:
+                logger.error("Twitter API returned no tweet ID")
+                return None
+            logger.info("Posted tweet %s", tweet_id)
+            return str(tweet_id)
+        except Exception as exc:
+            logger.error("Failed to post tweet: %s", exc)
             return None
 
     def post_thread(self, tweets: List[str]) -> Optional[str]:
-        """Post a thread of tweets. Returns ID of the first tweet."""
+        """Post a thread and return the first tweet's ID."""
         if not tweets:
             return None
 
@@ -86,26 +101,31 @@ class TwitterPoster:
             return None
 
         reply_to_id = first_id
-        
-        # Post remaining tweets
+        is_live = self.config.get("enabled", False) and not self.config.get(
+            "dry_run", True
+        )
+        delay = self.config.get("content", {}).get("thread_delay_seconds", 30)
+
         for text in tweets[1:]:
-            # Wait delay
-            delay = self.config['content'].get('thread_delay_seconds', 30)
-            if not self.config.get('dry_run', True):
-                time.sleep(delay)
-            
-            if self.config.get('enabled', False) and not self.config.get('dry_run', True):
+            if is_live:
                 try:
+                    if delay:
+                        time.sleep(max(0, delay))
+                    if not self.client:
+                        logger.error("Client not authenticated; stopping thread")
+                        break
                     response = self.client.create_tweet(
-                        text=text,
-                        in_reply_to_tweet_id=reply_to_id
+                        text=text, in_reply_to_tweet_id=reply_to_id
                     )
-                    reply_to_id = response.data['id']
-                    logger.info(f"Posted thread reply {reply_to_id}")
-                except Exception as e:
-                    logger.error(f"Failed to post thread reply: {e}")
+                    reply_to_id = response.data.get("id") if response.data else None
+                    if not reply_to_id:
+                        logger.error("Twitter API returned no ID for thread reply")
+                        break
+                    logger.info("Posted thread reply %s", reply_to_id)
+                except Exception as exc:
+                    logger.error("Failed to post thread reply: %s", exc)
                     break
             else:
-                logger.info(f"[DRY RUN] Would post reply: {text[:50]}...")
+                logger.info("[DRY RUN] Would post reply: %s...", text[:50])
 
         return first_id
