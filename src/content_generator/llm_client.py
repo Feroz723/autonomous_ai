@@ -1,259 +1,207 @@
+"""LLM provider clients with retries and explicit fallback warnings."""
+
 import os
 import random
-import time
 import sys
+import time
 from abc import ABC, abstractmethod
+
 from dotenv import load_dotenv
 
-# Load environment variables from .env file
 load_dotenv()
-
-# Add src to path if needed to import utils
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 try:
     from src.utils import circuit
 except ImportError:
-    # Fallback if running from a different context
     try:
         import circuit
     except ImportError:
-        print("⚠️ Could not import circuit breaker utility. Circuit breaking disabled.")
         circuit = None
+        print("⚠️ Circuit breaker utility unavailable; provider circuit breaking is disabled.")
+
 
 class LLMClient(ABC):
     @abstractmethod
     def generate_text(self, prompt: str, system_prompt: str = None, max_retries: int = 3) -> str:
-        pass
+        raise NotImplementedError
+
 
 class DummyClient(LLMClient):
-    """
-    A dummy client that returns template-based responses.
-    Useful for testing without API keys or costs.
-    """
+    """Template responses for local tests; enable intentionally via USE_DUMMY_LLM=true."""
+
     def generate_text(self, prompt: str, system_prompt: str = None, max_retries: int = 3) -> str:
-        # Simulate processing time
         time.sleep(0.1)
-        
-        # Simple heuristic to detect what's being asked
-        if "thread" in prompt.lower():
+        prompt_lower = prompt.lower()
+        if "thread" in prompt_lower:
             return self._generate_dummy_thread(prompt)
-        elif "tweet" in prompt.lower():
+        if "tweet" in prompt_lower:
             return self._generate_dummy_tweet(prompt)
-        elif "cta" in prompt.lower():
+        if "cta" in prompt_lower:
             return "🔥 DM me 'GROWTH' to get my free guide on this!"
-        elif "product" in prompt.lower() or "lead magnet" in prompt.lower():
-             return "Create a '30-Day AI Automation Checklist' PDF. It solves the problem of not knowing where to start. High value, easy to consume."
-        else:
-            return f"Dummy response to: {prompt[:50]}..."
+        if "product" in prompt_lower or "lead magnet" in prompt_lower:
+            return "Create a '30-Day AI Automation Checklist' PDF. It solves the problem of not knowing where to start. High value, easy to consume."
+        return f"Dummy response to: {prompt[:50]}..."
 
-    def _generate_dummy_tweet(self, prompt):
+    @staticmethod
+    def _generate_dummy_tweet(prompt):
         topics = ["AI", "Automation", "Solopreneurship", "Python"]
-        topic = next((t for t in topics if t.lower() in prompt.lower()), "Success")
-        
-        templates = [
-            f"Here's why {topic} is changing the game in 2025. 🚀\n\nMost people ignore it, but the top 1% are leveraging it daily.\n\nDon't get left behind. #AI #Solopreneur",
+        topic = next((item for item in topics if item.lower() in prompt.lower()), "Success")
+        return random.choice([
+            f"Here's why {topic} is changing the game. 🚀\n\nMost people ignore it, but the top 1% are leveraging it daily.\n\nDon't get left behind. #AI #Solopreneur",
             f"Stop overcomplicating {topic}.\n\n1. Start small\n2. Iterate fast\n3. Profit\n\nIt's that simple. 💡 #{topic} #Growth",
-            f"The secret to mastering {topic}? Consistency.\n\nDo it every day for 30 days and watch your life change. 📈"
-        ]
-        return random.choice(templates)
+            f"The secret to mastering {topic}? Consistency.\n\nDo it every day for 30 days and watch your life change. 📈",
+        ])
 
-    def _generate_dummy_thread(self, prompt):
+    @staticmethod
+    def _generate_dummy_thread(prompt):
         return (
-            "1/5 Here is a thread about the importance of this topic. 🧵\n\n"
-            "It's crucial for modern business.\n\n---\n\n"
-            "2/5 First point: Efficiency.\n\n"
-            "Automation saves time. Time is money. 💰\n\n---\n\n"
-            "3/5 Second point: Scalability.\n\n"
-            "Systems allow you to grow without burnout. 📈\n\n---\n\n"
-            "4/5 Third point: Freedom.\n\n"
-            "The goal isn't just money, it's time freedom. 🏖️\n\n---\n\n"
-            "5/5 Summary:\n"
-            "- Automate everything\n"
-            "- Build systems\n"
-            "- Enjoy life\n\n"
-            "Follow me for more! 🔔"
+            "1/5 Here is a thread about the importance of this topic. 🧵\n\nIt's crucial for modern business.\n\n---\n\n"
+            "2/5 First point: Efficiency.\n\nAutomation saves time. Time is money. 💰\n\n---\n\n"
+            "3/5 Second point: Scalability.\n\nSystems allow you to grow without burnout. 📈\n\n---\n\n"
+            "4/5 Third point: Freedom.\n\nThe goal isn't just money, it's time freedom. 🏖️\n\n---\n\n"
+            "5/5 Summary:\n- Automate everything\n- Build systems\n- Enjoy life\n\nFollow me for more! 🔔"
         )
 
+
+def _fallback(prompt: str, system_prompt: str, reason: str) -> str:
+    """Return a dummy result only when fallback is enabled, and make degradation visible."""
+    if os.getenv("LLM_FALLBACK_TO_DUMMY", "true").strip().lower() not in {"1", "true", "yes", "on"}:
+        raise RuntimeError(f"LLM request failed and dummy fallback is disabled: {reason}")
+    print(f"⚠️ LLM degraded mode: using dummy content ({reason})")
+    return DummyClient().generate_text(prompt, system_prompt)
+
+
 class OpenAIClient(LLMClient):
-    """OpenAI GPT client with retries and circuit breaker."""
+    """OpenAI Chat Completions client with bounded retries."""
+
     def __init__(self, api_key=None):
         try:
             import openai
-            self.client = openai.OpenAI(api_key=api_key or os.getenv("OPENAI_API_KEY"))
-            self.provider_name = "openai"
-        except ImportError:
-            raise ImportError("openai package not installed. Install with: pip install openai")
+        except ImportError as exc:
+            raise ImportError("openai package not installed; install with pip install openai") from exc
+        key = api_key or os.getenv("OPENAI_API_KEY")
+        if not key:
+            raise ValueError("OPENAI_API_KEY is required for LLM_PROVIDER=openai")
+        self.client = openai.OpenAI(api_key=key)
+        self.provider_name = "openai"
 
     def generate_text(self, prompt: str, system_prompt: str = None, max_retries: int = 3) -> str:
-        # Check circuit breaker
         if circuit and circuit.is_open(self.provider_name):
-            print(f"⚠️ Circuit open for {self.provider_name}. Falling back to Dummy.")
-            return DummyClient().generate_text(prompt, system_prompt)
-
-        messages = []
-        if system_prompt:
-            messages.append({"role": "system", "content": system_prompt})
+            return _fallback(prompt, system_prompt, f"{self.provider_name} circuit is open")
+        messages = ([{"role": "system", "content": system_prompt}] if system_prompt else [])
         messages.append({"role": "user", "content": prompt})
-        
-        # Retry logic
-        for attempt in range(max_retries + 1):
+        last_error = None
+        for attempt in range(max(1, max_retries + 1)):
             try:
                 response = self.client.chat.completions.create(
-                    model="gpt-3.5-turbo",
+                    model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
                     messages=messages,
                     temperature=0.7,
-                    max_tokens=500
+                    max_tokens=500,
                 )
-                
-                # Success! Clear any failure counts
+                result = response.choices[0].message.content if response.choices else None
+                if not result or not result.strip():
+                    raise ValueError("Empty response from OpenAI")
                 if circuit:
                     circuit.clear_failure(self.provider_name)
-                    
-                return response.choices[0].message.content
-                
-            except Exception as e:
-                error_msg = str(e).lower()
-                print(f"⚠️ OpenAI Error (Attempt {attempt+1}/{max_retries+1}): {str(e)}")
-                
-                # Check for rate limits or quota issues
-                if "rate limit" in error_msg or "quota" in error_msg or "429" in str(e):
+                return result.strip()
+            except Exception as exc:
+                last_error = exc
+                error = str(exc).lower()
+                if "rate limit" in error or "quota" in error or "429" in error:
                     if circuit:
                         circuit.mark_failure(self.provider_name)
-                    print(f"🛑 Critical OpenAI error. Opening circuit breaker and falling back.")
-                    return DummyClient().generate_text(prompt, system_prompt)
-                
-                # If last attempt failed, fallback
-                if attempt == max_retries:
-                    print("❌ All retries failed. Falling back to Dummy Client.")
-                    return DummyClient().generate_text(prompt, system_prompt)
-                
-                # Exponential backoff with jitter
-                sleep_time = (2 ** attempt) + random.uniform(0, 1)
-                print(f"⏳ Retrying in {sleep_time:.2f}s...")
-                time.sleep(sleep_time)
-        
-        return DummyClient().generate_text(prompt, system_prompt)
+                    break
+                if attempt < max_retries:
+                    time.sleep(min(2 ** attempt + random.uniform(0, 1), 30))
+        return _fallback(prompt, system_prompt, f"OpenAI request failed: {last_error}")
+
 
 class GeminiClient(LLMClient):
-    """Google Gemini client with retries and circuit breaker."""
+    """Google Gemini client with retries and a configurable request delay."""
+
     def __init__(self, api_key=None):
         try:
             import google.generativeai as genai
-            
-            api_key = api_key or os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
-            genai.configure(api_key=api_key)
-            
-            # Try different model names (use latest available models from Google)
-            # These are the FREE tier models available as of Dec 2025
-            model_names = ['gemini-flash-latest', 'gemini-2.5-flash', 'gemini-2.0-flash']
-            
-            for model_name in model_names:
-                try:
-                    self.model = genai.GenerativeModel(model_name)
-                    self.model_name = model_name
-                    # Test if model is accessible
-                    self.model.count_tokens("test")
-                    print(f"📱 Using Gemini model: {model_name}")
-                    break
-                except Exception as e:
-                    if model_name == model_names[-1]:  # Last attempt
-                        raise Exception(f"None of the Gemini models are available: {model_names}")
-                    continue
-            
-            self.provider_name = "gemini"
-        except ImportError:
-            raise Exception("google-generativeai not installed. Run: pip install google-generativeai")
-        except Exception as e:
-            raise Exception(f"Failed to initialize Gemini: {str(e)}")
-    
+        except ImportError as exc:
+            raise ImportError("google-generativeai is not installed") from exc
+        key = api_key or os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+        if not key:
+            raise ValueError("GEMINI_API_KEY or GOOGLE_API_KEY is required")
+        genai.configure(api_key=key)
+        self.model = genai.GenerativeModel(os.getenv("GEMINI_MODEL", "gemini-2.0-flash"))
+        self.provider_name = "gemini"
+        self.request_delay = max(0.0, float(os.getenv("GEMINI_REQUEST_DELAY_SECONDS", "0")))
+
     def generate_text(self, prompt: str, system_prompt: str = None, max_retries: int = 3) -> str:
-        # Check circuit breaker first
         if circuit and circuit.is_open(self.provider_name):
-            print(f"⚠️ Circuit open for {self.provider_name}. Falling back to Dummy.")
-            return DummyClient().generate_text(prompt, system_prompt)
-        
-        # Rate limit handling for free tier (5 requests/minute = 1 every 12 seconds)
-        # Add a small delay to avoid hitting the limit
-        time.sleep(13)  # 13 seconds = 4.6 req/min (safely under 5/min limit)
-        
-        # Combine system and user prompts
-        full_prompt = prompt
-        if system_prompt:
-            full_prompt = f"{system_prompt}\\n\\n{prompt}"
-        
-        for attempt in range(1, max_retries + 1):
+            return _fallback(prompt, system_prompt, f"{self.provider_name} circuit is open")
+        if self.request_delay:
+            time.sleep(self.request_delay)
+        full_prompt = f"{system_prompt}\n\n{prompt}" if system_prompt else prompt
+        last_error = None
+        for attempt in range(max(1, max_retries)):
             try:
                 response = self.model.generate_content(full_prompt)
-                
-                # Extract text from response
-                if response and response.text:
-                    return response.text.strip()
-                else:
-                    raise Exception("Empty response from Gemini")
-                    
-            except Exception as e:
-                error_msg = str(e).lower()
-                print(f"⚠️ Gemini Error (Attempt {attempt}/{max_retries}): {e}")
-                
-                # Check for quota/rate limit errors
-                if "quota" in error_msg or "rate limit" in error_msg or "429" in error_msg:
+                result = getattr(response, "text", None)
+                if result and result.strip():
+                    if circuit:
+                        circuit.clear_failure(self.provider_name)
+                    return result.strip()
+                raise ValueError("Empty response from Gemini")
+            except Exception as exc:
+                last_error = exc
+                error = str(exc).lower()
+                if "quota" in error or "rate limit" in error or "429" in error:
                     if circuit:
                         circuit.mark_failure(self.provider_name)
-                    print(f"🛑 Critical Gemini error. Opening circuit breaker and falling back.")
-                    return DummyClient().generate_text(prompt, system_prompt)
-                
-                # If last attempt failed, fallback
-                if attempt == max_retries:
-                    print("❌ All Gemini retries failed. Falling back to Dummy Client.")
-                    return DummyClient().generate_text(prompt, system_prompt)
-                
-                # Exponential backoff with jitter
-                sleep_time = (2 ** attempt) + random.uniform(0, 1)
-                print(f"⏳ Retrying in {sleep_time:.2f}s...")
-                time.sleep(sleep_time)
-        
-        return DummyClient().generate_text(prompt, system_prompt)
+                    break
+                if attempt + 1 < max_retries:
+                    time.sleep(min(2 ** (attempt + 1) + random.uniform(0, 1), 30))
+        return _fallback(prompt, system_prompt, f"Gemini request failed: {last_error}")
+
 
 def get_llm_client() -> LLMClient:
-    """Factory to get the configured LLM client."""
-    
-    # 1. Check for forced dummy mode
-    if os.getenv("USE_DUMMY_LLM", "false").lower() == "true":
-        print("🤖 USE_DUMMY_LLM is set. Using Dummy Client.")
+    """Create the configured client; dummy mode is explicit or clearly reported."""
+    if os.getenv("USE_DUMMY_LLM", "false").strip().lower() in {"1", "true", "yes", "on"}:
+        print("🤖 USE_DUMMY_LLM is enabled; using template responses.")
         return DummyClient()
-        
-    # 2. Check provider preference
-    provider = os.getenv("LLM_PROVIDER", "auto").lower()
-    
-    # 3. Try Gemini first (it's free!)
-    if provider == "gemini" or (provider == "auto" and (os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY"))):
-        try:
-            if circuit and circuit.is_open("gemini"):
-                print("⚠️ Gemini circuit is OPEN. Trying other providers...")
-            else:
-                print("✅ Using Google Gemini 1.5 Flash (FREE)")
-                return GeminiClient()
-        except Exception as e:
-            print(f"⚠️ Failed to initialize Gemini: {e}. Trying other providers...")
-    
-    # 4. Try OpenAI
-    if provider == "openai" or (provider == "auto" and os.getenv("OPENAI_API_KEY")):
-        try:
-            if circuit and circuit.is_open("openai"):
-                print("⚠️ OpenAI circuit is OPEN. Using Dummy Client.")
-                return DummyClient()
-                
-            print("✅ Using OpenAI GPT-3.5-turbo")
-            return OpenAIClient()
-        except Exception as e:
-            print(f"⚠️ Failed to initialize OpenAI client: {e}. Using Dummy.")
-            return DummyClient()
-            
-    elif provider == "ollama":
-        print("Ollama client requested but not enabled in code. Using Dummy.")
+
+    provider = os.getenv("LLM_PROVIDER", "auto").strip().lower()
+    if provider not in {"auto", "gemini", "openai", "dummy"}:
+        raise ValueError(f"Unsupported LLM_PROVIDER {provider!r}; choose auto, gemini, openai, or dummy")
+    if provider == "dummy":
+        print("🤖 LLM_PROVIDER=dummy; using template responses.")
         return DummyClient()
-        
+
+    candidates = []
+    if provider in {"auto", "gemini"} and (provider == "gemini" or os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")):
+        candidates.append(("gemini", GeminiClient))
+    if provider in {"auto", "openai"} and (provider == "openai" or os.getenv("OPENAI_API_KEY")):
+        candidates.append(("openai", OpenAIClient))
+
+    errors = []
+    for name, client_class in candidates:
+        if circuit and circuit.is_open(name):
+            errors.append(f"{name} circuit is open")
+            continue
+        try:
+            return client_class()
+        except Exception as exc:
+            errors.append(f"{name}: {exc}")
+            if provider != "auto":
+                break
+
+    if provider == "auto" and not candidates:
+        reason = "no provider API key configured"
     else:
-        print("ℹ️ No valid API keys found or provider not configured. Using Dummy client.")
-        return DummyClient()
+        reason = "; ".join(errors) or f"could not initialize provider {provider}"
+    return _fallback("", None, reason) if os.getenv("LLM_FALLBACK_TO_DUMMY", "true").strip().lower() in {"1", "true", "yes", "on"} else _raise_missing_provider(reason)
+
+
+def _raise_missing_provider(reason: str):
+    raise RuntimeError(
+        f"No usable LLM provider: {reason}. Set USE_DUMMY_LLM=true for intentional offline mode, "
+        "or configure LLM_PROVIDER and its API key."
+    )
